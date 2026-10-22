@@ -79,12 +79,16 @@ LoRA, seed 101). Each adds one stage of an anime pipeline at 0.5 MP before the r
 pass-1 size (aspect + megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.5 MP preview and
 the 1920 result.
 
+[![the four example workflows on one take: 1 relay only, 2 + Fast De-rope, 3 + FaceDetail, 4 + Anime Cadence](assets/examples_1to4.jpg)](assets/examples_1to4.mp4)
+
+*The four workflows' 1920 results side by side: 1 relay only | 2 + Fast De-rope / 3 + FaceDetail | 4 + Anime Cadence. Click for the clip (normal speed with sound, then half speed).*
+
 | workflow | what it adds | end to end* | packs it needs besides this one |
 |---|---|---|---|
-| `1_relay_hires.json` | relay only | 118 s | FastDerope (its taeh3 loader) |
-| `2_relay_hires_derope.json` | Fast De-rope: smeared fast motion comes back as clean drawings on 2s before the relay | 144 s | FastDerope, MAINodes |
-| `3_relay_hires_derope_facedetail.json` | + FaceDetail: small faces redrawn at 0.5 MP; its face tiles are stitched again onto the 1920 frames, so the final keeps the preview's faces | 224 s | + FaceDetail, ResCascade |
-| `4_relay_hires_derope_facedetail_cadence.json` | + Anime Cadence: 2s/3s holds, carried to 1920 by Hold Transfer | 228 s | + AnimeCadence |
+| [`1_relay_hires.json`](example_workflows/1_relay_hires.json) | relay only | 118 s | FastDerope (its taeh3 loader) |
+| [`2_relay_hires_derope.json`](example_workflows/2_relay_hires_derope.json) | Fast De-rope: smeared fast motion comes back as clean drawings on 2s before the relay | 144 s | FastDerope, MAINodes |
+| [`3_relay_hires_derope_facedetail.json`](example_workflows/3_relay_hires_derope_facedetail.json) | + FaceDetail: small faces redrawn at 0.5 MP; its face tiles are stitched again onto the 1920 frames, so the final keeps the preview's faces | 224 s | + FaceDetail, ResCascade |
+| [`4_relay_hires_derope_facedetail_cadence.json`](example_workflows/4_relay_hires_derope_facedetail_cadence.json) | + Anime Cadence: 2s/3s holds, carried to 1920 by Hold Transfer | 228 s | + AnimeCadence |
 
 *1920x1088, 124 frames (5 s), RTX 5090. FaceDetail's cost depends on the clip: here it redrew four face tracks of
 ~30 px and took ~80 s, re-stitch included.
