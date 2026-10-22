@@ -26,7 +26,7 @@ Each route renders its own take, so compare the drawing, not the pose.*
 - **Steady**: frame-to-frame change on still content 0.13 (native 0.10, the 1 MP route 0.22).
 - **Line weight** is the remaining gap to native: ink lines ~3.1-3.9 px vs ~2.2-3.0 px native.
 - **Very fast action**: where the 0.5 MP take itself melts (a sword clash), the result is motion blur, not crisp
-  poses. Fix those frames at 0.5 MP first (e.g. with a de-rope pass), then relay.
+  poses. Fix those frames at 0.5 MP first with a de-rope pass (example workflow 2), then relay.
 
 ![small faces in a wide shot: 0.5 MP preview, AnimeSR alone, Relay Hires](assets/rezero_wide_small_faces.jpg)
 
@@ -72,15 +72,40 @@ AnimeSR alone (no H3 step) is the cheapest 1920 path (~80 s), but it keeps the t
 Settings on H3 Relay Hires: `sigma_start` 0.60, `steps` 1, `window` 0. `window` 4 (with `anchor_stride` 8) is ~9 s faster
 with slightly more shimmer on still lines. The `upscaler` list shows AnimeSR models in `models/` plus `lanczos`.
 
-Example workflow: `example_workflows/h3_relay_hires.json`. A blue SETTINGS group holds the pass-1 size (aspect +
-megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; it saves the 0.5 MP preview and the 1920 result.
+## Example workflows
+
+Four workflows in `example_workflows/`, all rendering the same take (a street-market fight, plain H3 without a style
+LoRA, seed 101). Each adds one stage of an anime pipeline at 0.5 MP before the relay. A blue SETTINGS group holds the
+pass-1 size (aspect + megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.5 MP preview and
+the 1920 result.
+
+| workflow | what it adds | end to end* | packs it needs besides this one |
+|---|---|---|---|
+| `1_relay_hires.json` | relay only | 118 s | FastDerope (its taeh3 loader) |
+| `2_relay_hires_derope.json` | Fast De-rope: smeared fast motion comes back as clean drawings on 2s before the relay | 144 s | FastDerope, MAINodes |
+| `3_relay_hires_derope_facedetail.json` | + FaceDetail: small faces redrawn at 0.5 MP; its face tiles are stitched again onto the 1920 frames, so the final keeps the preview's faces | 224 s | + FaceDetail, ResCascade |
+| `4_relay_hires_derope_facedetail_cadence.json` | + Anime Cadence: 2s/3s holds, carried to 1920 by Hold Transfer | 228 s | + AnimeCadence |
+
+*1920x1088, 124 frames (5 s), RTX 5090. FaceDetail's cost depends on the clip: here it redrew four face tracks of
+~30 px and took ~80 s, re-stitch included.
+
+- In workflow 4 the relay renders the frames *before* Anime Cadence (so FaceDetail's tiles stay on their frames).
+  Hold Transfer then copies the 0.5 MP holds onto the 1920 frames; with its `source` input each hold shows the drawing
+  Cadence picked (needs ResCascade da05159 or later). Don't run Anime Cadence again after the relay.
+- Packs: [FastDerope](https://github.com/tazmannner/ComfyUI-H3-FastDerope),
+  [MAINodes](https://github.com/matlowai/ComfyUI-MAINodes),
+  [FaceDetail](https://github.com/tazmannner/ComfyUI-H3-FaceDetail) (with its anime face detector),
+  [ResCascade](https://github.com/tazmannner/ComfyUI-H3-ResCascade),
+  [AnimeCadence](https://github.com/tazmannner/ComfyUI-H3-AnimeCadence); all four workflows also use
+  [VideoHelperSuite](https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite) and comfyui_essentials (SimpleMath+).
 
 ## Requirements
 
-- MiniMax H3 in ComfyUI (the int8 or fp16 video VAE, the audio VAE), the DMAD 4-step turbo LoRA for H3
+- MiniMax H3 in ComfyUI (the example workflows load the fp16 and int8 video VAEs and the audio VAE), the DMAD 4-step
+  turbo LoRA for H3
 - a taeh3 loader for the encode (e.g. ComfyUI-H3-FastDerope's)
 - `models/animesr_v1.safetensors` (included)
-- the example workflow also uses comfyui_essentials (SimpleMath+) for the size settings
+- the example workflows also use comfyui_essentials (SimpleMath+) for the size settings, and the packs listed above
 
 ## Train AnimeSR yourself
 
