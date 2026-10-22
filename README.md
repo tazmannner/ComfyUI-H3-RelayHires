@@ -79,9 +79,9 @@ LoRA, seed 101). Each adds one stage of an anime pipeline at 0.5 MP before the r
 pass-1 size (aspect + megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.5 MP preview and
 the 1920 result.
 
-[![the four example workflows on one take: 1 relay only, 2 + Fast De-rope, 3 + FaceDetail, 4 + Anime Cadence](assets/examples_1to4.jpg)](assets/examples_1to4.mp4)
+[![the four example workflows on one take: 1 relay only, 2 + Fast De-rope, 3 + FaceDetail, 4 + Anime Cadence](assets/examples_1to4.webp)](assets/examples_1to4.mp4)
 
-*The four workflows' 1920 results side by side: 1 relay only | 2 + Fast De-rope / 3 + FaceDetail | 4 + Anime Cadence. Click for the clip (normal speed with sound, then half speed).*
+*The four workflows' 1920 results side by side: 1 relay only | 2 + Fast De-rope / 3 + FaceDetail | 4 + Anime Cadence. Click for the full clip (with sound, then half speed).*
 
 | workflow | what it adds | end to end* | packs it needs besides this one |
 |---|---|---|---|
