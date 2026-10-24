@@ -69,6 +69,20 @@ Pass 1 is still the biggest cost: 58 s of a ~120 s relay-only render, 285 s of a
 - Settings: `decide_above` 0.79, `tail_steps` 4, `tail_solver` dpmpp_2m_flow. `tail_steps` 3 is ~25% faster but drops a
   few tiny sparks and particles; a lower `decide_above` changes the take and makes the audio louder.
 
+**Without this pack (stock ComfyUI nodes).** The same pass 1 can be wired from core nodes:
+
+1. BasicScheduler (`beta57`, 20) -> SplitSigmas (`step` 12)
+2. SamplerCustomAdvanced #1: your RandomNoise, KSamplerSelect `euler`, SplitSigmas' high sigmas
+3. ManualSigmas `0.7903, 0.65766, 0.44654, 0.17186, 0` (the 4 tail points of beta57 20 at shift 12)
+4. SamplerCustomAdvanced #2: DisableNoise, SamplerDPMPP_2M_SDE (`eta` 0, `solver_type` midpoint), the ManualSigmas,
+   the latent from #1. Decode the video and the audio from #2.
+
+With `eta` 0 that sampler is the same DPM++ 2M in flow log-SNR as the node's tail; on the market clip it renders the
+node's take (32.6 dB PSNR, soundtrack correlation 0.995, same loudness). What the node adds: one node instead of five,
+tail points picked from whatever schedule it gets (the ManualSigmas values above only fit beta57, 20 steps, shift 12),
+and no hand-off between two samplers. The head is euler in both; the idea (keep the steps above 0.79, shorten the tail)
+should carry over to other samplers but was only measured with euler.
+
 ## AnimeSR
 
 H3 draws ink lines ~2 px wide at **every** resolution, so a 0.5 MP take has lines twice too thick for 1920. AnimeSR is a
