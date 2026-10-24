@@ -3,22 +3,27 @@
 Render a MiniMax H3 take small, finish it at 1920x1088: **about half the time of an upscaled 1 MP render and a quarter
 of a native 1920 render**, keeping the take you previewed and its audio. Built for 2D anime.
 
-![Re:Zero-style close-up: native 1920 vs today's 1 MP hires route vs Relay Hires vs its 0.5 MP preview](assets/rezero_native_today_relay.jpg)
+[![Re:Zero-style close-up: native 1920, 1 MP + latent upscale + refine, Relay Hires, Relay Hires with the Fast Tail Sampler](assets/rezero_four_routes.webp)](assets/rezero_four_routes.mp4)
 
-*Top: native 1920 render, 1 MP render + latent upscale + refine. Bottom: Relay Hires, and the 0.5 MP pass it came from.
-Each route renders its own take, so compare the drawing, not the pose.*
+*Top: native 1920 render (503 s), 1 MP render + latent upscale + refine (241 s). Bottom: Relay Hires (119 s), and Relay
+Hires with the H3 Fast Tail Sampler in pass 1 (108 s). Each route renders its own take, so compare the drawing, not the
+pose; the two relays share one. Click for the full clip (with sound, then half speed).*
 
 ## Results
 
 5 s clips (124 frames), 1920x1088, RTX 5090, end to end (text encode, sampling, decodes, saves):
 
-| clip | native 1920 | 1 MP + latent upscale + refine | **Relay Hires** |
-|---|---|---|---|
-| Teen Titans-style punch | 492 s | 240 s | **122 s** |
-| plain-H3 sword fight | 503 s | 241 s | **124 s** |
-| Edgerunners-style rocket | 508 s | 245 s | **126 s** |
-| Re:Zero-style mecha, close-ups | 503 s | 241 s | **124 s** |
-| Re:Zero-style wide shot, small faces | 500 s | 239 s | **123 s** |
+| clip | native 1920 | 1 MP + latent upscale + refine | **Relay Hires** | **+ Fast Tail** |
+|---|---|---|---|---|
+| Teen Titans-style punch | 492 s | 240 s | **116 s** | **105 s** |
+| plain-H3 sword fight | 503 s | 241 s | **118 s** | **107 s** |
+| Edgerunners-style rocket | 508 s | 245 s | **121 s** | **109 s** |
+| Re:Zero-style mecha, close-ups | 503 s | 241 s | **119 s** | **108 s** |
+| Re:Zero-style wide shot, small faces | 500 s | 239 s | **117 s** | **106 s** |
+
+*+ Fast Tail*: the same Relay Hires with the H3 Fast Tail Sampler in pass 1 ([below](#faster-pass-1-h3-fast-tail-sampler)),
+same take. The two relay columns were measured in one session (Relay Hires renders bit-identical to its first test,
+which also saved an AnimeSR-only comparison video and took 122-126 s); native and 1 MP are from the original tests.
 
 - **Same take as the 0.5 MP preview**, and its soundtrack sample for sample (the audio is pinned outright).
 - **Crisp at 1:1**: the preview's melted fast-frame faces and motion smears are redrawn as proper drawings, and small
