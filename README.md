@@ -44,6 +44,26 @@ Why these settings (measured, see the development notes):
 - **dense attention**: temporal window attention is ~9 s faster but makes still lines shimmer unless every chunk also
   sees shared anchor frames, and even then it's a little less steady.
 
+## Faster pass 1: H3 Fast Tail Sampler
+
+Pass 1 is still the biggest cost: 58 s of a ~120 s relay-only render, 285 s of a 15 s clip through the full pipeline.
+**H3 Fast Tail Sampler** takes ~20% off it without changing the take. Use it in pass 1 instead of KSamplerSelect
+`euler` and keep BasicScheduler `beta57` 20 (example workflows 5-8 do).
+
+- H3 decides layout, acting and audio timing in the first 12 of the 20 steps (sigma >= 0.79), and that part is
+  chaotic: fewer steps, more steps (even 40) or another solver all give a different take. The sampler runs those 12
+  steps exactly as `euler` does, bit for bit.
+- Below 0.79 the path is smooth, so the last 8 steps become 4 second-order steps (DPM++ 2M with its step ratio
+  measured in H3's flow log-SNR). Checked against a near-exact finish of the same take (a 32-step tail), they land as
+  close to it as the 8 euler steps do, in fine detail and in the soundtrack.
+- RTX 5090, end to end: examples 1-4 -> 5-8 9-12 s faster each (pass 1 58 -> 47 s); 15 s clips through the full
+  pipeline 706 -> ~650 s and 814 -> 752 s (pass 1 285 -> 229 s). The 1920 results match: same frames and poses (29-34
+  dB PSNR to the euler render, where a different take measures 13-19 dB), same ink-line width and still-line flicker.
+- The soundtrack comes out ~0.5 dB louder than with euler (euler's 8-step finish is ~0.5 dB under the near-exact
+  one), and Anime Cadence may place a 2s/3s hold one frame differently.
+- Settings: `decide_above` 0.79, `tail_steps` 4, `tail_solver` dpmpp_2m_flow. `tail_steps` 3 is ~25% faster but drops a
+  few tiny sparks and particles; a lower `decide_above` changes the take and makes the audio louder.
+
 ## AnimeSR
 
 H3 draws ink lines ~2 px wide at **every** resolution, so a 0.5 MP take has lines twice too thick for 1920. AnimeSR is a
@@ -65,6 +85,7 @@ AnimeSR alone (no H3 step) is the cheapest 1920 path (~80 s), but it keeps the t
 | node | what it does |
 |---|---|
 | **H3 Relay Hires** | the whole method in one node. Inputs: the pass-1 model with the DMAD LoRA at 0.8 (same style LoRAs and shift), the pass-1 conditioning, the pass-1 AV latent (for its audio), the pass-1 frames, a VAE for the encode (taeh3). Outputs the AV latent at the target size, plus the upscaled frames. |
+| H3 Fast Tail Sampler | pass-1 sampler in place of KSamplerSelect `euler`: the steps where H3 decides the take run as euler, then a short 2nd-order tail. Pass 1 ~20% faster, same take ([below](#faster-pass-1-h3-fast-tail-sampler)) |
 | H3 Relay Upscale (AnimeSR) | AnimeSR alone: frames -> any size |
 | H3 Relay Window Attention | temporal window attention, with anchor frames (research / speed option) |
 | H3 Relay Anchor, H3 Relay Line Thin | research tools from development, not part of the recipe |
@@ -74,10 +95,10 @@ with slightly more shimmer on still lines. The `upscaler` list shows AnimeSR mod
 
 ## Example workflows
 
-Four workflows in `example_workflows/`, all rendering the same take (a street-market fight, plain H3 without a style
-LoRA, seed 101). Each adds one stage of an anime pipeline at 0.5 MP before the relay. A blue SETTINGS group holds the
-pass-1 size (aspect + megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.5 MP preview and
-the 1920 result.
+Eight workflows in `example_workflows/`, all rendering the same take (a street-market fight, plain H3 without a style
+LoRA, seed 101). 1-4 each add one stage of an anime pipeline at 0.5 MP before the relay; 5-8 are the same four with the
+H3 Fast Tail Sampler in pass 1 (same take, 9-12 s faster). A blue SETTINGS group holds the pass-1 size (aspect +
+megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.5 MP preview and the 1920 result.
 
 [![the four example workflows on one take: 1 relay only, 2 + Fast De-rope, 3 + FaceDetail, 4 + Anime Cadence](assets/examples_1to4.webp)](assets/examples_1to4.mp4)
 
@@ -89,9 +110,16 @@ the 1920 result.
 | [`2_relay_hires_derope.json`](example_workflows/2_relay_hires_derope.json) | Fast De-rope: smeared fast motion comes back as clean drawings on 2s before the relay | 144 s | FastDerope, MAINodes |
 | [`3_relay_hires_derope_facedetail.json`](example_workflows/3_relay_hires_derope_facedetail.json) | + FaceDetail: small faces redrawn at 0.5 MP; its face tiles are stitched again onto the 1920 frames, so the final keeps the preview's faces | 224 s | + FaceDetail, ResCascade |
 | [`4_relay_hires_derope_facedetail_cadence.json`](example_workflows/4_relay_hires_derope_facedetail_cadence.json) | + Anime Cadence: 2s/3s holds, carried to 1920 by Hold Transfer | 228 s | + AnimeCadence |
+| [`5_relay_hires_fast_tail.json`](example_workflows/5_relay_hires_fast_tail.json) | 1 with the H3 Fast Tail Sampler in pass 1 | 110 s\*\* | as 1 |
+| [`6_relay_hires_derope_fast_tail.json`](example_workflows/6_relay_hires_derope_fast_tail.json) | 2 with the H3 Fast Tail Sampler in pass 1 | 134 s\*\* | as 2 |
+| [`7_relay_hires_derope_facedetail_fast_tail.json`](example_workflows/7_relay_hires_derope_facedetail_fast_tail.json) | 3 with the H3 Fast Tail Sampler in pass 1 | 209 s\*\* | as 3 |
+| [`8_relay_hires_derope_facedetail_cadence_fast_tail.json`](example_workflows/8_relay_hires_derope_facedetail_cadence_fast_tail.json) | 4 with the H3 Fast Tail Sampler in pass 1 | 213 s\*\* | as 4 |
 
 *1920x1088, 124 frames (5 s), RTX 5090. FaceDetail's cost depends on the clip: here it redrew four face tracks of
 ~30 px and took ~80 s, re-stitch included.
+
+\*\*Timed in one session together with a re-run of 1-4 (122 / 146 / 218 / 222 s there): the whole difference is pass 1,
+58 -> 47 s; FaceDetail's CPU steps vary by a few seconds between runs.
 
 - In workflow 4 the relay renders the frames *before* Anime Cadence (so FaceDetail's tiles stay on their frames).
   Hold Transfer then copies the 0.5 MP holds onto the 1920 frames; with its `source` input each hold shows the drawing

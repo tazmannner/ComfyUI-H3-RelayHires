@@ -3,6 +3,8 @@
 H3RelayHires            the method in one node: AnimeSR upscale -> encode -> one DMAD step from sigma 0.60 at the
                         target size, pass-1 audio pinned outright
 H3RelayUpscale          AnimeSR alone (arbitrary-scale anime upscaler, trained from scratch): frames -> target size
+H3FastTailSampler       pass-1 sampler: today's euler steps where H3 decides the take, a short 2nd-order tail after
+                        (20 -> 16 steps, same take, same detail and audio; fast_tail.py)
 H3RelayWindowAttention  temporal window attention (research/speed option). Keep anchor frames on: without a shared
                         reference each chunk redraws still lines slightly differently and they boil
 H3RelayAnchor           research: pins the low frequencies of the denoised video to a reference latent every step
@@ -18,7 +20,7 @@ import torch.nn.functional as F
 import comfy.model_management as mm
 import comfy.patcher_extension
 
-from . import animesr
+from . import animesr, fast_tail
 
 log = logging.getLogger("H3RelayHires")
 MODELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
@@ -393,3 +395,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {"H3RelayUpscale": "H3 Relay Upscale (AnimeSR)",
                               "H3RelayWindowAttention": "H3 Relay Window Attention (detail pass)",
                               "H3RelayLineThin": "H3 Relay Line Thin (ink lines to H3's native width)",
                               "H3RelayHires": "H3 Relay Hires (0.5 MP take -> 1920, audio pinned)"}
+NODE_CLASS_MAPPINGS.update(fast_tail.NODE_CLASS_MAPPINGS)
+NODE_DISPLAY_NAME_MAPPINGS.update(fast_tail.NODE_DISPLAY_NAME_MAPPINGS)

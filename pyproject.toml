@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-h3-relayhires"
 description = "Render MiniMax H3 at 0.5 MP, finish at 1920x1088: AnimeSR (an anime upscaler trained from scratch) plus one DMAD step at the target size with the pass-1 audio pinned. About half the time of an upscaled 1 MP render and a quarter of a native 1920 one, same take."
-version = "0.1.0"
+version = "0.2.0"
 license = { file = "LICENSE" }
 dependencies = []
 
