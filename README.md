@@ -83,6 +83,29 @@ tail points picked from whatever schedule it gets (the ManualSigmas values above
 and no hand-off between two samplers. The head is euler in both; the idea (keep the steps above 0.79, shorten the tail)
 should carry over to other samplers but was only measured with euler.
 
+## Max speed: Pika H3 Flex in pass 1
+
+[Pika H3 Flex](https://github.com/Pika-Labs/Pika-H3-Flex) is a distilled turbo LoRA for H3: pass 1 in 6 steps instead
+of 20. In front of Relay Hires it's the fastest route we've tested, but it **renders its own take**: same prompt and
+seed, different framing, character designs, acting and soundtrack. Not worse, different. Use it when you want max
+speed; keep the 20-step pass 1 (examples 1-8) when you want the base model's take. Example workflows `1_B` and `4_B`
+are 1 and 4 with it (118 -> 82 s and 228 -> 202 s; pass 1 60 -> 22 s).
+
+[![cyberpunk alley: 20-step pass 1, Pika pass 1 + Relay Hires, 20-step pass 1 + Relay Hires](assets/cyber_pika_3way.webp)](assets/cyber_pika_3way_audio_tour.mp4)
+
+*9.4 s clip, seed 101. A: the 20-step pass 1 at 0.5 MP. C: that take through Relay Hires (279 s). B: Pika pass 1 +
+the same Relay Hires (182 s). Click for the clip with sound: each version's soundtrack plays in turn.*
+
+- **Time**: this 9.4 s clip 279 -> 182 s (pass 1 ~42 s); a 15 s clip through the full pipeline (de-rope, FaceDetail,
+  cadence) 814 -> 646 s.
+- **Audio**: also its own take. Dialogue and sound effects come through, but quiet background music can drop out (the
+  alley's low synth drone did). Describe music explicitly and loudly ("a loud, driving synthwave track, clearly
+  audible from the first second") and it comes back.
+- **Settings**: LoRA 1.0 (the fl2va file for t2v, the ref2va file for Ref2VA) *before* MiniMaxH3SigmaShift (keep 12/3
+  in the model path), ManualSigmas `1.0, 0.972973, 0.923077, 0.8, 0.571429, 0.333333, 0`, sampler `lcm`, cfg 1
+  (BasicGuider). The relay's 1920 step stays DMAD 0.8. The Fast Tail Sampler doesn't apply (it shortens the 20-step
+  schedule), so there's no Pika version of 5-8.
+
 ## AnimeSR
 
 H3 draws ink lines ~2 px wide at **every** resolution, so a 0.5 MP take has lines twice too thick for 1920. AnimeSR is a
@@ -114,9 +137,10 @@ with slightly more shimmer on still lines. The `upscaler` list shows AnimeSR mod
 
 ## Example workflows
 
-Eight workflows in `example_workflows/`, all rendering the same take (a street-market fight, plain H3 without a style
-LoRA, seed 101). 1-4 each add one stage of an anime pipeline at 0.5 MP before the relay; 5-8 are the same four with the
-H3 Fast Tail Sampler in pass 1 (same take, 9-12 s faster). A blue SETTINGS group holds the pass-1 size (aspect +
+Ten workflows in `example_workflows/`, all on the same prompt (a street-market fight, plain H3 without a style LoRA,
+seed 101). 1-4 each add one stage of an anime pipeline at 0.5 MP before the relay; 5-8 are the same four with the
+H3 Fast Tail Sampler in pass 1 (same take, 9-12 s faster); 1_B and 4_B are 1 and 4 with Pika H3 Flex in pass 1
+(fastest, Pika's own take, [above](#max-speed-pika-h3-flex-in-pass-1)). A blue SETTINGS group holds the pass-1 size (aspect +
 megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.5 MP preview and the 1920 result.
 
 [![the four example workflows on one take: 1 relay only, 2 + Fast De-rope, 3 + FaceDetail, 4 + Anime Cadence](assets/examples_1to4.webp)](assets/examples_1to4.mp4)
@@ -133,6 +157,8 @@ megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.
 | [`6_relay_hires_derope_fast_tail.json`](example_workflows/6_relay_hires_derope_fast_tail.json) | 2 with the H3 Fast Tail Sampler in pass 1 | 134 s\*\* | as 2 |
 | [`7_relay_hires_derope_facedetail_fast_tail.json`](example_workflows/7_relay_hires_derope_facedetail_fast_tail.json) | 3 with the H3 Fast Tail Sampler in pass 1 | 209 s\*\* | as 3 |
 | [`8_relay_hires_derope_facedetail_cadence_fast_tail.json`](example_workflows/8_relay_hires_derope_facedetail_cadence_fast_tail.json) | 4 with the H3 Fast Tail Sampler in pass 1 | 213 s\*\* | as 4 |
+| [`1_B_relay_hires_PIKA6STEP.json`](example_workflows/1_B_relay_hires_PIKA6STEP.json) | 1 with Pika H3 Flex in pass 1 (6 steps, its own take) | 82 s | as 1, + the Pika H3 Flex fl2va LoRA |
+| [`4_B_relay_hires_derope_facedetail_cadence_PIKA6STEP.json`](example_workflows/4_B_relay_hires_derope_facedetail_cadence_PIKA6STEP.json) | 4 with Pika H3 Flex in pass 1 (6 steps, its own take) | 202 s | as 4, + the Pika H3 Flex fl2va LoRA |
 
 *1920x1088, 124 frames (5 s), RTX 5090. FaceDetail's cost depends on the clip: here it redrew four face tracks of
 ~30 px and took ~80 s, re-stitch included.
