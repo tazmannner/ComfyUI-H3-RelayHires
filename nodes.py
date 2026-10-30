@@ -20,7 +20,7 @@ import torch.nn.functional as F
 import comfy.model_management as mm
 import comfy.patcher_extension
 
-from . import animesr, fast_tail
+from . import animesr, fast_tail, relay_finish
 
 log = logging.getLogger("H3RelayHires")
 MODELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
@@ -397,3 +397,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {"H3RelayUpscale": "H3 Relay Upscale (AnimeSR)",
                               "H3RelayHires": "H3 Relay Hires (0.5 MP take -> 1920, audio pinned)"}
 NODE_CLASS_MAPPINGS.update(fast_tail.NODE_CLASS_MAPPINGS)
 NODE_DISPLAY_NAME_MAPPINGS.update(fast_tail.NODE_DISPLAY_NAME_MAPPINGS)
+NODE_CLASS_MAPPINGS.update(relay_finish.NODE_CLASS_MAPPINGS)
+NODE_DISPLAY_NAME_MAPPINGS.update(relay_finish.NODE_DISPLAY_NAME_MAPPINGS)
