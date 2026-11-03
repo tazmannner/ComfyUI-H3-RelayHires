@@ -129,6 +129,29 @@ small arbitrary-scale upscaler (1.3 M params, 5 MB) trained from scratch to undo
   no ringing. Because the H3 step keeps much of the start image's line width, this carries into the result.
 
 AnimeSR alone (no H3 step) is the cheapest 1920 path (~80 s), but it keeps the take's smears and mushy small faces.
+It's trained for 0.47-0.72x inputs, so it works best for upscales of about 1.4x-2.1x (the default 0.5 MP -> 1920 is 2x).
+
+### Not anime? Plug in your own upscaler
+
+AnimeSR learned anime: on a painterly or realistic take it turns rough skin and stubble into clean cel shading. H3
+Relay Hires has an optional `upscale_model` input for any ComfyUI upscale model (**Load Upscale Model**). The model runs
+at its own scale (x2, x4) and the result is resized to `width` x `height`, so it works with any hires scale; the
+`upscaler` dropdown is ignored while a model is connected.
+
+One painterly take (a card dealer, graphic-novel look), same pass 1, only the upscaler changed:
+
+| upscaler | relay node time (5 s clip) | fine detail (Laplacian) | look |
+|---|---|---|---|
+| AnimeSR | 26 s | 6.4-7.0 | turns the face anime: smooth skin, cel shading, stubble gone |
+| lanczos | 24 s | 7.1-7.9 | keeps the style, soft |
+| **RealESRGAN_x2plus** | **42 s** | **9.8-10.6** | keeps stubble, skin creases, card filigree, wood grain |
+| 4x-UltraSharp | 107 s | 10.7-12.0 | most detail, 4x slower |
+
+![the same frames through AnimeSR, lanczos, 4x-UltraSharp and RealESRGAN x2](assets/upscaler_painterly_crops.jpg)
+
+None adds flicker (frame-to-frame jitter is the same for all four, close to pass 1). For non-anime looks
+RealESRGAN x2 is the best value: native 2x matches the default scale. Keep AnimeSR for anime. Thanks to The Shadow for
+the suggestion.
 
 ## Bench: Pika vs DMAD, window attention, De-rope schedule
 
@@ -194,7 +217,7 @@ Sol, and it's ~50 s slower on 15 s (full-size decoder).
 
 | node | what it does |
 |---|---|
-| **H3 Relay Hires** | the whole method in one node. Inputs: the pass-1 model with the DMAD LoRA at 0.8 (same style LoRAs and shift), the pass-1 conditioning, the pass-1 AV latent (for its audio), the pass-1 frames, a VAE for the encode (taeh3). Outputs the AV latent at the target size, plus the upscaled frames. |
+| **H3 Relay Hires** | the whole method in one node. Inputs: the pass-1 model with the DMAD LoRA at 0.8 (same style LoRAs and shift), the pass-1 conditioning, the pass-1 AV latent (for its audio), the pass-1 frames, a VAE for the encode (taeh3). Optional `upscale_model`: any ComfyUI upscale model instead of AnimeSR ([non-anime looks](#not-anime-plug-in-your-own-upscaler)). Outputs the AV latent at the target size, plus the upscaled frames. |
 | H3 Fast Tail Sampler | pass-1 sampler in place of KSamplerSelect `euler`: the steps where H3 decides the take run as euler, then a short 2nd-order tail. Pass 1 ~20% faster, same take ([below](#faster-pass-1-h3-fast-tail-sampler)) |
 | H3 Relay Upscale (AnimeSR) | AnimeSR alone: frames -> any size |
 | H3 Relay Window Attention | temporal window attention, with anchor frames (research / speed option) |

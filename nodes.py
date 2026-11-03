@@ -310,6 +310,31 @@ def _fit_keyframes(positive, size):
     return out, dropped
 
 
+def _model_upscale(upscale_model, frames, width, height, chunk=8):
+    """a ComfyUI upscale model at its own scale, area-resized to the target, a few frames at a time (a 4x model's full
+    output for a whole clip would not fit in RAM)"""
+    import comfy.utils
+    dev = mm.get_torch_device()
+    mm.load_models_gpu([upscale_model.patcher], force_full_load=True)
+    out = []
+    for i in range(0, frames.shape[0], chunk):
+        x = frames[i:i + chunk].movedim(-1, 1).to(dev)
+        tile = 512
+        while True:
+            try:
+                s = comfy.utils.tiled_scale(x, lambda a: upscale_model(a.float()), tile_x=tile, tile_y=tile, overlap=32,
+                                            upscale_amount=upscale_model.scale, output_device=dev)
+                break
+            except Exception as e:
+                mm.raise_non_oom(e)
+                tile //= 2
+                if tile < 128:
+                    raise
+        s = F.interpolate(s.clamp(0, 1), size=(height, width), mode="area" if s.shape[-1] >= width else "bicubic")
+        out.append(s.clamp(0, 1).movedim(1, -1).to(mm.intermediate_device(), frames.dtype))
+    return torch.cat(out)
+
+
 class H3RelayHires:
     _sr = {}
 
@@ -335,6 +360,10 @@ class H3RelayHires:
             "anchor_stride": ("INT", {"default": 8, "min": 1, "max": 64,
                                       "tooltip": "with a window: also attend every Nth latent frame (a shared reference "
                                                  "that keeps still lines from boiling)"}),
+            "upscale_model": ("UPSCALE_MODEL", {"tooltip": "optional: any ComfyUI upscale model (Load Upscale Model) "
+                                                           "instead of AnimeSR, e.g. for painterly or realistic looks. Runs "
+                                                           "at the model's own scale (x2, x4) and is area-resized to "
+                                                           "width x height, so any hires scale works"}),
         }}
 
     RETURN_TYPES = ("LATENT", "IMAGE")
@@ -345,11 +374,14 @@ class H3RelayHires:
                    "size; one DMAD step at sigma 0.60 redraws the detail there. Audio pinned.")
 
     def run(self, model, positive, latent, images, vae, width, height, upscaler, sigma_start, steps, window, seed,
-            anchor_stride=8):
+            anchor_stride=8, upscale_model=None):
         import comfy.nested_tensor, comfy.sample, comfy.samplers, comfy.utils, latent_preview
         from comfy_extras.nodes_custom_sampler import Guider_Basic
         frames = images[..., :3]
-        if upscaler == "lanczos":
+        if upscale_model is not None:
+            up = _model_upscale(upscale_model, frames, width, height)
+            upscaler = f"upscale model x{upscale_model.scale:g}"
+        elif upscaler == "lanczos":
             up = comfy.utils.common_upscale(frames.movedim(-1, 1), width, height, "lanczos", "disabled").movedim(1, -1)
         else:
             dev = mm.get_torch_device()
