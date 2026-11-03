@@ -43,7 +43,9 @@ which also saved an AnimeSR-only comparison video and took 122-126 s); native an
    so that's where the saving is: 60 s instead of 151 s at 1 MP.
 2. **AnimeSR** upscales the decoded frames to the target size in ~2 s (see below).
 3. **One DMAD step from sigma 0.60** at the target size redraws the detail: the frames are encoded (taeh3 is enough),
-   re-noised to 0.60 and denoised in one turbo step with the pass-1 audio pinned, then decoded.
+   re-noised to 0.60 and denoised in one turbo step with the pass-1 audio pinned, then decoded. If the 1920 result
+   pulses in brightness every 4 frames, encode and decode with the Sol-H3 VAE instead
+   ([below](#flicker-fix-sol-h3-vae-on-the-1920-step-optional)).
 
 Why these settings (measured, see the development notes):
 - **sigma 0.60**: 0.45 stays soft from a 0.5 MP take; 0.75 starts redrawing fast frames (new faces, re-smeared limbs).
@@ -138,7 +140,7 @@ runs the 1920 step 2 steps from 0.57 with a 4-frame window and encodes with the 
 | change | result | verdict |
 |---|---|---|
 | that workflow as a whole | clearly softer at 1920 (Laplacian sharpness 25 vs 78): lanczos + a lower start hand the detail step a blurrier image than AnimeSR at 0.60 | not adopted |
-| full int8 VAE for the 1920 encode instead of taeh3 | softer (54 vs 78) and ~60 s slower | not adopted |
+| full int8 VAE for the 1920 encode instead of taeh3 | softer (54 vs 78) and ~60 s slower | not adopted (but see the [Sol-H3 VAE](#flicker-fix-sol-h3-vae-on-the-1920-step-optional) for the 4-frame pulse) |
 | Pika in the 1920 step, 1 step at 0.60 | softer than DMAD (169 vs 187) | not adopted |
 | Pika in the 1920 step, 2 steps from 0.57 | +8% sharpness on paper, no visible difference, +100 s | not adopted |
 | Pika in FaceDetail | same faces as DMAD (mean difference ~1/255); on Pika's own sigma knots one step fewer on mid-size faces (133 -> 99 s) | optional |
@@ -155,6 +157,38 @@ still cleans the smeared arm. Hands can still change (Diana's pointing finger be
 
 Still open: the motion gate splices one continuous span, so a calm close-up between fast shots gets redrawn too and
 loses pass-1 detail such as eye highlights. Limiting the redraw to the fast shots is planned in Fast De-rope.
+
+## Flicker fix: Sol-H3 VAE on the 1920 step (optional)
+
+taeh3 encodes each latent frame (4 video frames) a little off, so after the 1920 step every 4th frame can come out
+brighter: ~1.5 luma on average and ~3 on big flat areas, a slow shimmer on running tracks, floors and skies. Pass 1
+and the 0.5 MP stages don't have it; it starts at the relay's encode. It's strong on bright flat shots and faint on
+busy ones: on a sports-day establishing shot the red track jumps +2.9 every 4th frame; on the market fight of the
+examples the 4-frame pattern is only ±0.16. Window attention doesn't matter (dense and window 4 pulse the same).
+
+If you see it, use [`4_relay_hires_derope_facedetail_cadence_SOLVAE.json`](example_workflows/4_relay_hires_derope_facedetail_cadence_SOLVAE.json),
+or change any workflow by hand: load `minimax_h3_sol_vae_int8_convrot.safetensors` (from
+[Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3), `vae/`; base model
+[Efficient-Large-Model/Sol-H3-VAE](https://huggingface.co/Efficient-Large-Model/Sol-H3-VAE)) with a VAELoader and wire
+it into **H3 Relay Hires**' `vae` (the encode) and the **1920 VAE Decode** (or H3 Relay Finish's `vae`). Sol has its own
+encoder, so the latent frames come out even; its distilled decoder is the fast part.
+
+![track brightness vs pass 1, frame by frame: taeh3 jumps every 4th frame, Sol stays flat](assets/taeh3_pulse_chart.png)
+
+| 1920 step (sports day, 15 s) | 4-frame pulse (track) | fine detail (Laplacian) | relay node (encode + step) + 1920 decode |
+|---|---|---|---|
+| taeh3 (all other examples) | +2.9 | 4.9-5.3 | 91 + 38 s |
+| full int8 VAE | none | 4.3-4.7 | 169 + 38 s |
+| **Sol-H3 VAE** | **none** | 4.4-4.9 | 168 + 15 s |
+
+At 1:1 the line art and eyes look the same in all three. On the 5 s example clip the SOLVAE workflow takes 244 s end to
+end against 217 s for example 4 (the 1920 step 37 -> 58 s): Sol's encode is as slow as the full VAE's, its decode is
+faster than the stock one. The other examples keep taeh3, since most clips don't show the pulse.
+
+Also tried: a community anime fine-tune of the H3 VAE
+([Seamless Anime VAE](https://civitai.com/models/3025416/minimax-h3-seamless-anime-vae)) on both ends. No pulse either
+and visibly fewer 16-px grid blocks at 4x zoom (grid ratio 1.15 vs Sol 1.40), but at normal size it looks the same as
+Sol, and it's ~50 s slower on 15 s (full-size decoder).
 
 ## Nodes
 
@@ -175,7 +209,9 @@ shows AnimeSR models in `models/` plus `lanczos`.
 Ten workflows in `example_workflows/`, all on the same prompt (a street-market fight, plain H3 without a style LoRA,
 seed 101). 1-4 each add one stage of an anime pipeline at 0.5 MP before the relay; 5-8 are the same four with the
 H3 Fast Tail Sampler in pass 1 (same take, 9-12 s faster); 1_B and 4_B are 1 and 4 with Pika H3 Flex in pass 1
-(fastest, Pika's own take, [above](#max-speed-pika-h3-flex-in-pass-1)). A blue SETTINGS group holds the pass-1 size (aspect +
+(fastest, Pika's own take, [above](#max-speed-pika-h3-flex-in-pass-1)). Two variants of 4 change only the 1920 end:
+4_B_..._LOWRAM (H3 Relay Finish, less RAM) and 4_..._SOLVAE (the Sol-H3 VAE, for the
+[4-frame flicker](#flicker-fix-sol-h3-vae-on-the-1920-step-optional)). A blue SETTINGS group holds the pass-1 size (aspect +
 megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.5 MP preview and the 1920 result.
 
 [![the four example workflows on one take: 1 relay only, 2 + Fast De-rope, 3 + FaceDetail, 4 + Anime Cadence](assets/examples_1to4.webp)](assets/examples_1to4.mp4)
@@ -194,6 +230,7 @@ megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.
 | [`8_relay_hires_derope_facedetail_cadence_fast_tail.json`](example_workflows/8_relay_hires_derope_facedetail_cadence_fast_tail.json) | 4 with the H3 Fast Tail Sampler in pass 1 | 201 s\*\* | as 4 |
 | [`1_B_relay_hires_PIKA6STEP.json`](example_workflows/1_B_relay_hires_PIKA6STEP.json) | 1 with Pika H3 Flex in pass 1 (6 steps, its own take) | 69 s\*\* | as 1, + the Pika H3 Flex fl2va LoRA |
 | [`4_B_relay_hires_derope_facedetail_cadence_PIKA6STEP.json`](example_workflows/4_B_relay_hires_derope_facedetail_cadence_PIKA6STEP.json) | 4 with Pika H3 Flex in pass 1 (6 steps, its own take) | 174 s\*\* | as 4, + the Pika H3 Flex fl2va LoRA |
+| [`4_relay_hires_derope_facedetail_cadence_SOLVAE.json`](example_workflows/4_relay_hires_derope_facedetail_cadence_SOLVAE.json) | 4 with the Sol-H3 VAE for the 1920 encode and decode: no 4-frame brightness flicker | 244 s | as 4, + the Sol-H3 int8 VAE |
 
 *1920x1088, 124 frames (5 s), RTX 5090. FaceDetail's cost depends on the clip: here it redrew four face tracks of
 ~30 px and took ~80 s, re-stitch included.
@@ -217,7 +254,7 @@ pass 2 takes the same time (15 -> 14 s); the rest is FaceDetail's CPU steps, whi
 
 - MiniMax H3 in ComfyUI (the example workflows load the fp16 and int8 video VAEs and the audio VAE), the DMAD 4-step
   turbo LoRA for H3
-- a taeh3 loader for the encode (e.g. ComfyUI-H3-FastDerope's)
+- a taeh3 loader for the encode (e.g. ComfyUI-H3-FastDerope's); the SOLVAE example uses the Sol-H3 int8 VAE instead
 - `models/animesr_v1.safetensors` (included)
 - the example workflows also use comfyui_essentials (SimpleMath+) for the size settings, and the packs listed above
 
