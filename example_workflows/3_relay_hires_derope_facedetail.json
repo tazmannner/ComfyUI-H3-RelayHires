@@ -1,6 +1,6 @@
 {
  "last_node_id": 67,
- "last_link_id": 123,
+ "last_link_id": 122,
  "nodes": [
   {
    "id": 1,
@@ -117,8 +117,8 @@
      "name": "INT",
      "type": "INT",
      "links": [
-      110,
-      122
+      109,
+      121
      ]
     },
     {
@@ -166,8 +166,8 @@
      "name": "INT",
      "type": "INT",
      "links": [
-      111,
-      123
+      110,
+      122
      ]
     },
     {
@@ -205,8 +205,8 @@
      "type": "STRING",
      "links": [
       9,
-      79,
-      97
+      78,
+      96
      ]
     }
    ],
@@ -272,7 +272,7 @@
      "links": [
       7,
       28,
-      77
+      76
      ]
     }
    ],
@@ -306,8 +306,8 @@
      "type": "VAE",
      "links": [
       8,
-      71,
-      78
+      70,
+      77
      ]
     }
    ],
@@ -338,10 +338,10 @@
      "name": "VAE",
      "type": "VAE",
      "links": [
-      47,
-      55,
-      93,
-      108
+      46,
+      54,
+      92,
+      107
      ]
     }
    ],
@@ -373,9 +373,9 @@
      "name": "VAE",
      "type": "VAE",
      "links": [
-      51,
-      73,
-      103
+      50,
+      72,
+      102
      ]
     }
    ],
@@ -409,7 +409,7 @@
       22,
       24,
       29,
-      121
+      120
      ]
     }
    ],
@@ -449,8 +449,8 @@
      "links": [
       6,
       35,
-      82,
-      104
+      81,
+      103
      ]
     }
    ],
@@ -566,7 +566,7 @@
      "type": "CONDITIONING",
      "links": [
       13,
-      118
+      117
      ]
     },
     {
@@ -680,7 +680,7 @@
      "type": "SAMPLER",
      "links": [
       17,
-      43
+      42
      ]
     }
    ],
@@ -728,7 +728,8 @@
     "beta57",
     20,
     1.0
-   ]
+   ],
+   "title": "PASS 1: Pika's 6 sigmas (keep the 12/3 sigma shift in the model path)"
   },
   {
    "id": 19,
@@ -778,9 +779,9 @@
      "links": [
       20,
       21,
-      50,
-      54,
-      119
+      49,
+      53,
+      118
      ]
     },
     {
@@ -821,7 +822,7 @@
      "name": "hold_map",
      "type": "STRING",
      "links": [
-      57
+      56
      ]
     },
     {
@@ -902,7 +903,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      56
+      55
      ]
     }
    ],
@@ -992,7 +993,7 @@
      "name": "LATENT",
      "type": "LATENT",
      "links": [
-      45
+      44
      ]
     }
    ],
@@ -1207,8 +1208,7 @@
      "name": "MODEL",
      "type": "MODEL",
      "links": [
-      38,
-      40
+      38
      ]
     }
    ],
@@ -1256,7 +1256,7 @@
      "name": "GUIDER",
      "type": "GUIDER",
      "links": [
-      42
+      41
      ]
     }
    ],
@@ -1267,50 +1267,42 @@
   },
   {
    "id": 29,
-   "type": "H3InjectSchedule",
+   "type": "ManualSigmas",
    "pos": [
-    2160,
-    742
+    60,
+    1848
    ],
    "size": [
     380,
-    210
+    106
    ],
    "flags": {},
-   "order": 5,
+   "order": 0,
    "mode": 0,
-   "inputs": [
-    {
-     "name": "model",
-     "type": "MODEL",
-     "link": 40
-    }
-   ],
+   "inputs": [],
    "outputs": [
     {
      "name": "SIGMAS",
      "type": "SIGMAS",
      "links": [
-      44
+      43
      ]
     }
    ],
    "properties": {
-    "Node name for S&R": "H3InjectSchedule"
+    "Node name for S&R": "ManualSigmas"
    },
    "widgets_values": [
-    "simple",
-    8,
-    0.5,
-    "custom"
-   ]
+    "0.8, 0.6, 0.4, 0.2, 0.0"
+   ],
+   "title": "PASS 2 (De-rope): 4 DMAD steps from 0.8 - keeps pass 1's framing and poses"
   },
   {
    "id": 30,
    "type": "RandomNoise",
    "pos": [
     60,
-    1848
+    1994
    ],
    "size": [
     380,
@@ -1325,7 +1317,7 @@
      "name": "NOISE",
      "type": "NOISE",
      "links": [
-      41
+      40
      ]
     }
    ],
@@ -1355,27 +1347,27 @@
     {
      "name": "noise",
      "type": "NOISE",
-     "link": 41
+     "link": 40
     },
     {
      "name": "guider",
      "type": "GUIDER",
-     "link": 42
+     "link": 41
     },
     {
      "name": "sampler",
      "type": "SAMPLER",
-     "link": 43
+     "link": 42
     },
     {
      "name": "sigmas",
      "type": "SIGMAS",
-     "link": 44
+     "link": 43
     },
     {
      "name": "latent_image",
      "type": "LATENT",
-     "link": 45
+     "link": 44
     }
    ],
    "outputs": [
@@ -1383,7 +1375,7 @@
      "name": "output",
      "type": "LATENT",
      "links": [
-      46
+      45
      ]
     },
     {
@@ -1416,12 +1408,12 @@
     {
      "name": "samples",
      "type": "LATENT",
-     "link": 46
+     "link": 45
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 47
+     "link": 46
     }
    ],
    "outputs": [
@@ -1429,7 +1421,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      48
+      47
      ]
     }
    ],
@@ -1456,12 +1448,12 @@
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 48
+     "link": 47
     },
     {
      "name": "drawing_map",
      "type": "STRING",
-     "link": 49
+     "link": 48
     }
    ],
    "outputs": [
@@ -1469,7 +1461,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      63
+      62
      ]
     }
    ],
@@ -1484,7 +1476,7 @@
    "type": "VAEDecodeAudio",
    "pos": [
     2160,
-    992
+    742
    ],
    "size": [
     380,
@@ -1497,12 +1489,12 @@
     {
      "name": "samples",
      "type": "LATENT",
-     "link": 50
+     "link": 49
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 51
+     "link": 50
     }
    ],
    "outputs": [
@@ -1510,10 +1502,10 @@
      "name": "AUDIO",
      "type": "AUDIO",
      "links": [
-      53,
-      72,
-      100,
-      116
+      52,
+      71,
+      99,
+      115
      ]
     }
    ],
@@ -1541,12 +1533,12 @@
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 52
+     "link": 51
     },
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 53
+     "link": 52
     },
     {
      "name": "meta_batch",
@@ -1593,7 +1585,7 @@
    "type": "VAEDecode",
    "pos": [
     2160,
-    1164
+    914
    ],
    "size": [
     380,
@@ -1606,12 +1598,12 @@
     {
      "name": "samples",
      "type": "LATENT",
-     "link": 54
+     "link": 53
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 55
+     "link": 54
     }
    ],
    "outputs": [
@@ -1619,9 +1611,9 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
+      57,
       58,
-      59,
-      61
+      60
      ]
     }
    ],
@@ -1649,17 +1641,17 @@
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 56
+     "link": 55
     },
     {
      "name": "oracle_hold_map",
      "type": "STRING",
-     "link": 57
+     "link": 56
     },
     {
      "name": "static_images",
      "type": "IMAGE",
-     "link": 58
+     "link": 57
     }
    ],
    "outputs": [
@@ -1667,30 +1659,30 @@
      "name": "segment_images",
      "type": "IMAGE",
      "links": [
-      64,
-      68
+      63,
+      67
      ]
     },
     {
      "name": "hold_map",
      "type": "STRING",
      "links": [
-      65
+      64
      ]
     },
     {
      "name": "splice_map",
      "type": "STRING",
      "links": [
-      62
+      61
      ]
     },
     {
      "name": "segment_start",
      "type": "INT",
      "links": [
-      60,
-      99
+      59,
+      98
      ]
     },
     {
@@ -1732,12 +1724,12 @@
     {
      "name": "image",
      "type": "IMAGE",
-     "link": 59
+     "link": 58
     },
     {
      "name": "batch_index",
      "type": "INT",
-     "link": 60,
+     "link": 59,
      "widget": {
       "name": "batch_index"
      }
@@ -1778,17 +1770,17 @@
     {
      "name": "baseline",
      "type": "IMAGE",
-     "link": 61
+     "link": 60
     },
     {
      "name": "splice_map",
      "type": "STRING",
-     "link": 62
+     "link": 61
     },
     {
      "name": "segment",
      "type": "IMAGE",
-     "link": 63
+     "link": 62
     }
    ],
    "outputs": [
@@ -1796,8 +1788,8 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      69,
-      94
+      68,
+      93
      ]
     }
    ],
@@ -1829,12 +1821,12 @@
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 64
+     "link": 63
     },
     {
      "name": "hold_map",
      "type": "STRING",
-     "link": 65
+     "link": 64
     }
    ],
    "outputs": [
@@ -1843,16 +1835,16 @@
      "type": "IMAGE",
      "links": [
       23,
-      66
+      65
      ]
     },
     {
      "name": "drawing_map",
      "type": "STRING",
      "links": [
-      49,
-      67,
-      98
+      48,
+      66,
+      97
      ]
     },
     {
@@ -1871,7 +1863,7 @@
      "name": "audio_hold_map",
      "type": "STRING",
      "links": [
-      101
+      100
      ]
     }
    ],
@@ -1903,17 +1895,17 @@
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 66
+     "link": 65
     },
     {
      "name": "map",
      "type": "STRING",
-     "link": 67
+     "link": 66
     },
     {
      "name": "segment_images",
      "type": "IMAGE",
-     "link": 68
+     "link": 67
     }
    ],
    "outputs": [
@@ -1951,7 +1943,7 @@
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 69
+     "link": 68
     }
    ],
    "outputs": [
@@ -1959,23 +1951,23 @@
      "name": "canvas",
      "type": "IMAGE",
      "links": [
-      70
+      69
      ]
     },
     {
      "name": "regen_mask",
      "type": "MASK",
      "links": [
-      75
+      74
      ]
     },
     {
      "name": "atlas",
      "type": "H3_FACE_ATLAS",
      "links": [
-      86,
-      96,
-      109
+      85,
+      95,
+      108
      ]
     },
     {
@@ -1987,14 +1979,14 @@
      "name": "width",
      "type": "INT",
      "links": [
-      80
+      79
      ]
     },
     {
      "name": "height",
      "type": "INT",
      "links": [
-      81
+      80
      ]
     },
     {
@@ -2039,12 +2031,12 @@
     {
      "name": "pixels",
      "type": "IMAGE",
-     "link": 70
+     "link": 69
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 71
+     "link": 70
     }
    ],
    "outputs": [
@@ -2052,7 +2044,7 @@
      "name": "LATENT",
      "type": "LATENT",
      "links": [
-      74
+      73
      ]
     }
    ],
@@ -2079,12 +2071,12 @@
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 72
+     "link": 71
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 73
+     "link": 72
     }
    ],
    "outputs": [
@@ -2092,7 +2084,7 @@
      "name": "LATENT",
      "type": "LATENT",
      "links": [
-      76
+      75
      ]
     }
    ],
@@ -2119,7 +2111,7 @@
     {
      "name": "samples",
      "type": "LATENT",
-     "link": 74
+     "link": 73
     },
     {
      "name": "oracle_samples",
@@ -2129,12 +2121,12 @@
     {
      "name": "mask",
      "type": "MASK",
-     "link": 75
+     "link": 74
     },
     {
      "name": "audio_latent",
      "type": "LATENT",
-     "link": 76
+     "link": 75
     }
    ],
    "outputs": [
@@ -2142,7 +2134,7 @@
      "name": "LATENT",
      "type": "LATENT",
      "links": [
-      91
+      90
      ]
     }
    ],
@@ -2181,17 +2173,17 @@
     {
      "name": "clip",
      "type": "CLIP",
-     "link": 77
+     "link": 76
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 78
+     "link": 77
     },
     {
      "name": "prompt",
      "type": "STRING",
-     "link": 79,
+     "link": 78,
      "widget": {
       "name": "prompt"
      }
@@ -2199,7 +2191,7 @@
     {
      "name": "width",
      "type": "INT",
-     "link": 80,
+     "link": 79,
      "widget": {
       "name": "width"
      }
@@ -2207,7 +2199,7 @@
     {
      "name": "height",
      "type": "INT",
-     "link": 81,
+     "link": 80,
      "widget": {
       "name": "height"
      }
@@ -2228,7 +2220,7 @@
      "name": "positive",
      "type": "CONDITIONING",
      "links": [
-      85
+      84
      ]
     },
     {
@@ -2265,7 +2257,7 @@
     {
      "name": "model",
      "type": "MODEL",
-     "link": 82
+     "link": 81
     }
    ],
    "outputs": [
@@ -2273,7 +2265,7 @@
      "name": "MODEL",
      "type": "MODEL",
      "links": [
-      83
+      82
      ]
     }
    ],
@@ -2303,7 +2295,7 @@
     {
      "name": "model",
      "type": "MODEL",
-     "link": 83
+     "link": 82
     }
    ],
    "outputs": [
@@ -2311,7 +2303,7 @@
      "name": "MODEL",
      "type": "MODEL",
      "links": [
-      84
+      83
      ]
     }
    ],
@@ -2341,12 +2333,12 @@
     {
      "name": "model",
      "type": "MODEL",
-     "link": 84
+     "link": 83
     },
     {
      "name": "conditioning",
      "type": "CONDITIONING",
-     "link": 85
+     "link": 84
     }
    ],
    "outputs": [
@@ -2354,7 +2346,7 @@
      "name": "GUIDER",
      "type": "GUIDER",
      "links": [
-      88
+      87
      ]
     }
    ],
@@ -2368,7 +2360,7 @@
    "type": "RandomNoise",
    "pos": [
     60,
-    2020
+    2166
    ],
    "size": [
     380,
@@ -2383,7 +2375,7 @@
      "name": "NOISE",
      "type": "NOISE",
      "links": [
-      87
+      86
      ]
     }
    ],
@@ -2400,7 +2392,7 @@
    "type": "KSamplerSelect",
    "pos": [
     60,
-    2192
+    2338
    ],
    "size": [
     380,
@@ -2415,7 +2407,7 @@
      "name": "SAMPLER",
      "type": "SAMPLER",
      "links": [
-      89
+      88
      ]
     }
    ],
@@ -2444,7 +2436,7 @@
     {
      "name": "atlas",
      "type": "H3_FACE_ATLAS",
-     "link": 86
+     "link": 85
     }
    ],
    "outputs": [
@@ -2452,7 +2444,7 @@
      "name": "sigmas",
      "type": "SIGMAS",
      "links": [
-      90
+      89
      ]
     },
     {
@@ -2496,27 +2488,27 @@
     {
      "name": "noise",
      "type": "NOISE",
-     "link": 87
+     "link": 86
     },
     {
      "name": "guider",
      "type": "GUIDER",
-     "link": 88
+     "link": 87
     },
     {
      "name": "sampler",
      "type": "SAMPLER",
-     "link": 89
+     "link": 88
     },
     {
      "name": "sigmas",
      "type": "SIGMAS",
-     "link": 90
+     "link": 89
     },
     {
      "name": "latent_image",
      "type": "LATENT",
-     "link": 91
+     "link": 90
     }
    ],
    "outputs": [
@@ -2524,7 +2516,7 @@
      "name": "output",
      "type": "LATENT",
      "links": [
-      92
+      91
      ]
     },
     {
@@ -2557,12 +2549,12 @@
     {
      "name": "samples",
      "type": "LATENT",
-     "link": 92
+     "link": 91
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 93
+     "link": 92
     }
    ],
    "outputs": [
@@ -2570,8 +2562,8 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      95,
-      113
+      94,
+      112
      ]
     }
    ],
@@ -2598,17 +2590,17 @@
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 94
+     "link": 93
     },
     {
      "name": "refined",
      "type": "IMAGE",
-     "link": 95
+     "link": 94
     },
     {
      "name": "atlas",
      "type": "H3_FACE_ATLAS",
-     "link": 96
+     "link": 95
     }
    ],
    "outputs": [
@@ -2616,8 +2608,8 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      52,
-      120
+      51,
+      119
      ]
     }
    ],
@@ -2652,7 +2644,7 @@
     {
      "name": "prompt",
      "type": "STRING",
-     "link": 97,
+     "link": 96,
      "widget": {
       "name": "prompt"
      }
@@ -2660,12 +2652,12 @@
     {
      "name": "seg_map",
      "type": "STRING",
-     "link": 98
+     "link": 97
     },
     {
      "name": "segment_start",
      "type": "INT",
-     "link": 99
+     "link": 98
     }
    ],
    "outputs": [
@@ -2708,12 +2700,12 @@
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 100
+     "link": 99
     },
     {
      "name": "hold_map",
      "type": "STRING",
-     "link": 101,
+     "link": 100,
      "widget": {
       "name": "hold_map"
      }
@@ -2724,7 +2716,7 @@
      "name": "AUDIO",
      "type": "AUDIO",
      "links": [
-      102
+      101
      ]
     }
    ],
@@ -2754,12 +2746,12 @@
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 102
+     "link": 101
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 103
+     "link": 102
     }
    ],
    "outputs": [
@@ -2794,7 +2786,7 @@
     {
      "name": "model",
      "type": "MODEL",
-     "link": 104
+     "link": 103
     }
    ],
    "outputs": [
@@ -2802,7 +2794,7 @@
      "name": "MODEL",
      "type": "MODEL",
      "links": [
-      105
+      104
      ]
     }
    ],
@@ -2833,7 +2825,7 @@
     {
      "name": "model",
      "type": "MODEL",
-     "link": 105
+     "link": 104
     }
    ],
    "outputs": [
@@ -2841,7 +2833,7 @@
      "name": "MODEL",
      "type": "MODEL",
      "links": [
-      117
+      116
      ]
     }
    ],
@@ -2872,7 +2864,7 @@
     {
      "name": "av_latent",
      "type": "LATENT",
-     "link": 106
+     "link": 105
     }
    ],
    "outputs": [
@@ -2880,7 +2872,7 @@
      "name": "video_latent",
      "type": "LATENT",
      "links": [
-      107
+      106
      ]
     },
     {
@@ -2913,12 +2905,12 @@
     {
      "name": "samples",
      "type": "LATENT",
-     "link": 107
+     "link": 106
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 108
+     "link": 107
     }
    ],
    "outputs": [
@@ -2926,7 +2918,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      112
+      111
      ]
     }
    ],
@@ -2954,12 +2946,12 @@
     {
      "name": "atlas",
      "type": "H3_FACE_ATLAS",
-     "link": 109
+     "link": 108
     },
     {
      "name": "width",
      "type": "INT",
-     "link": 110,
+     "link": 109,
      "widget": {
       "name": "width"
      }
@@ -2967,7 +2959,7 @@
     {
      "name": "height",
      "type": "INT",
-     "link": 111,
+     "link": 110,
      "widget": {
       "name": "height"
      }
@@ -2978,7 +2970,7 @@
      "name": "H3_FACE_ATLAS",
      "type": "H3_FACE_ATLAS",
      "links": [
-      114
+      113
      ]
     }
    ],
@@ -3009,17 +3001,17 @@
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 112
+     "link": 111
     },
     {
      "name": "refined",
      "type": "IMAGE",
-     "link": 113
+     "link": 112
     },
     {
      "name": "atlas",
      "type": "H3_FACE_ATLAS",
-     "link": 114
+     "link": 113
     }
    ],
    "outputs": [
@@ -3027,7 +3019,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      115
+      114
      ]
     }
    ],
@@ -3062,12 +3054,12 @@
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 115
+     "link": 114
     },
     {
      "name": "audio",
      "type": "AUDIO",
-     "link": 116
+     "link": 115
     },
     {
      "name": "meta_batch",
@@ -3118,7 +3110,7 @@
    ],
    "size": [
     380,
-    470
+    496
    ],
    "flags": {},
    "order": 21,
@@ -3127,32 +3119,32 @@
     {
      "name": "model",
      "type": "MODEL",
-     "link": 117
+     "link": 116
     },
     {
      "name": "positive",
      "type": "CONDITIONING",
-     "link": 118
+     "link": 117
     },
     {
      "name": "latent",
      "type": "LATENT",
-     "link": 119
+     "link": 118
     },
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 120
+     "link": 119
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 121
+     "link": 120
     },
     {
      "name": "width",
      "type": "INT",
-     "link": 122,
+     "link": 121,
      "widget": {
       "name": "width"
      }
@@ -3160,7 +3152,7 @@
     {
      "name": "height",
      "type": "INT",
-     "link": 123,
+     "link": 122,
      "widget": {
       "name": "height"
      }
@@ -3171,7 +3163,7 @@
      "name": "latent",
      "type": "LATENT",
      "links": [
-      106
+      105
      ]
     },
     {
@@ -3189,12 +3181,12 @@
     "animesr_v1.safetensors",
     0.6,
     1,
-    0,
+    4,
     108,
     "fixed",
     8
    ],
-   "title": "H3 RELAY HIRES: AnimeSR -> 1 DMAD step at sigma 0.60 at 1920, audio pinned"
+   "title": "H3 RELAY HIRES: AnimeSR -> 1 DMAD step at sigma 0.60 at 1920, audio pinned; window 4 + anchors every 8 (about half the time of dense; 0 = dense)"
   },
   {
    "id": 67,
@@ -3214,7 +3206,7 @@
    "outputs": [],
    "properties": {},
    "widgets_values": [
-    "RELAY HIRES, example 3 of 4: + Fast De-rope + FaceDetail.\n\nSmall faces in wide shots get only a few 32 px DiT tokens and come out mushy. FaceDetail finds them (anime face detector, CPU), magnifies each into a tile of one canvas and redraws them in one H3 pass at 0.5 MP; faces already big are left alone. After the relay, the same face tiles are stitched onto the 1920 frames, so the final keeps the faces you approved in the preview.\n\nSet the pass-1 size, hires scale and prompt in the blue SETTINGS group. Needs: ComfyUI-H3-FaceDetail, ComfyUI-H3-FastDerope, ComfyUI-H3-RelayHires, ComfyUI-H3-ResCascade, ComfyUI-MAINodes, ComfyUI-VideoHelperSuite, comfyui_essentials. Models: MiniMax H3 (int8 DiT, text encoder, fp16 + int8 video VAEs, audio VAE), taeh3, the DMAD 4-step turbo LoRA, FaceDetail's anime face detector (see its README).\n\nTested: 224 s end to end on an RTX 5090 (5 s clip, 124 frames)."
+    "RELAY HIRES, example 3 of 4: + Fast De-rope + FaceDetail.\n\nSmall faces in wide shots get only a few 32 px DiT tokens and come out mushy. FaceDetail finds them (anime face detector, CPU), magnifies each into a tile of one canvas and redraws them in one H3 pass at 0.5 MP; faces already big are left alone. After the relay, the same face tiles are stitched onto the 1920 frames, so the final keeps the faces you approved in the preview.\n\nSet the pass-1 size, hires scale and prompt in the blue SETTINGS group. Needs: ComfyUI-H3-FaceDetail, ComfyUI-H3-FastDerope, ComfyUI-H3-RelayHires, ComfyUI-H3-ResCascade, ComfyUI-MAINodes, ComfyUI-VideoHelperSuite, comfyui_essentials. Models: MiniMax H3 (int8 DiT, text encoder, fp16 + int8 video VAEs, audio VAE), taeh3, the DMAD 4-step turbo LoRA, FaceDetail's anime face detector (see its README).\n\nTested: 212 s end to end on an RTX 5090 (5 s clip, 124 frames)."
    ]
   }
  ],
@@ -3533,14 +3525,6 @@
   ],
   [
    40,
-   27,
-   0,
-   29,
-   0,
-   "MODEL"
-  ],
-  [
-   41,
    30,
    0,
    31,
@@ -3548,7 +3532,7 @@
    "NOISE"
   ],
   [
-   42,
+   41,
    28,
    0,
    31,
@@ -3556,7 +3540,7 @@
    "GUIDER"
   ],
   [
-   43,
+   42,
    17,
    0,
    31,
@@ -3564,7 +3548,7 @@
    "SAMPLER"
   ],
   [
-   44,
+   43,
    29,
    0,
    31,
@@ -3572,7 +3556,7 @@
    "SIGMAS"
   ],
   [
-   45,
+   44,
    23,
    0,
    31,
@@ -3580,7 +3564,7 @@
    "LATENT"
   ],
   [
-   46,
+   45,
    31,
    0,
    32,
@@ -3588,7 +3572,7 @@
    "LATENT"
   ],
   [
-   47,
+   46,
    9,
    0,
    32,
@@ -3596,7 +3580,7 @@
    "VAE"
   ],
   [
-   48,
+   47,
    32,
    0,
    33,
@@ -3604,7 +3588,7 @@
    "IMAGE"
   ],
   [
-   49,
+   48,
    40,
    1,
    33,
@@ -3612,7 +3596,7 @@
    "STRING"
   ],
   [
-   50,
+   49,
    19,
    0,
    34,
@@ -3620,7 +3604,7 @@
    "LATENT"
   ],
   [
-   51,
+   50,
    10,
    0,
    34,
@@ -3628,7 +3612,7 @@
    "VAE"
   ],
   [
-   52,
+   51,
    55,
    0,
    35,
@@ -3636,7 +3620,7 @@
    "IMAGE"
   ],
   [
-   53,
+   52,
    34,
    0,
    35,
@@ -3644,7 +3628,7 @@
    "AUDIO"
   ],
   [
-   54,
+   53,
    19,
    0,
    36,
@@ -3652,7 +3636,7 @@
    "LATENT"
   ],
   [
-   55,
+   54,
    9,
    0,
    36,
@@ -3660,7 +3644,7 @@
    "VAE"
   ],
   [
-   56,
+   55,
    21,
    0,
    37,
@@ -3668,7 +3652,7 @@
    "IMAGE"
   ],
   [
-   57,
+   56,
    20,
    0,
    37,
@@ -3676,7 +3660,7 @@
    "STRING"
   ],
   [
-   58,
+   57,
    36,
    0,
    37,
@@ -3684,7 +3668,7 @@
    "IMAGE"
   ],
   [
-   59,
+   58,
    36,
    0,
    38,
@@ -3692,7 +3676,7 @@
    "IMAGE"
   ],
   [
-   60,
+   59,
    37,
    3,
    38,
@@ -3700,7 +3684,7 @@
    "INT"
   ],
   [
-   61,
+   60,
    36,
    0,
    39,
@@ -3708,7 +3692,7 @@
    "IMAGE"
   ],
   [
-   62,
+   61,
    37,
    2,
    39,
@@ -3716,7 +3700,7 @@
    "STRING"
   ],
   [
-   63,
+   62,
    33,
    0,
    39,
@@ -3724,7 +3708,7 @@
    "IMAGE"
   ],
   [
-   64,
+   63,
    37,
    0,
    40,
@@ -3732,31 +3716,31 @@
    "IMAGE"
   ],
   [
-   65,
+   64,
    37,
    1,
    40,
    1,
    "STRING"
+  ],
+  [
+   65,
+   40,
+   0,
+   41,
+   0,
+   "IMAGE"
   ],
   [
    66,
    40,
-   0,
-   41,
-   0,
-   "IMAGE"
-  ],
-  [
-   67,
-   40,
    1,
    41,
    1,
    "STRING"
   ],
   [
-   68,
+   67,
    37,
    0,
    41,
@@ -3764,7 +3748,7 @@
    "IMAGE"
   ],
   [
-   69,
+   68,
    39,
    0,
    42,
@@ -3772,7 +3756,7 @@
    "IMAGE"
   ],
   [
-   70,
+   69,
    42,
    0,
    43,
@@ -3780,7 +3764,7 @@
    "IMAGE"
   ],
   [
-   71,
+   70,
    8,
    0,
    43,
@@ -3788,7 +3772,7 @@
    "VAE"
   ],
   [
-   72,
+   71,
    34,
    0,
    44,
@@ -3796,7 +3780,7 @@
    "AUDIO"
   ],
   [
-   73,
+   72,
    10,
    0,
    44,
@@ -3804,7 +3788,7 @@
    "VAE"
   ],
   [
-   74,
+   73,
    43,
    0,
    45,
@@ -3812,7 +3796,7 @@
    "LATENT"
   ],
   [
-   75,
+   74,
    42,
    1,
    45,
@@ -3820,7 +3804,7 @@
    "MASK"
   ],
   [
-   76,
+   75,
    44,
    0,
    45,
@@ -3828,7 +3812,7 @@
    "LATENT"
   ],
   [
-   77,
+   76,
    7,
    0,
    46,
@@ -3836,7 +3820,7 @@
    "CLIP"
   ],
   [
-   78,
+   77,
    8,
    0,
    46,
@@ -3844,7 +3828,7 @@
    "VAE"
   ],
   [
-   79,
+   78,
    5,
    0,
    46,
@@ -3852,7 +3836,7 @@
    "STRING"
   ],
   [
-   80,
+   79,
    42,
    4,
    46,
@@ -3860,7 +3844,7 @@
    "INT"
   ],
   [
-   81,
+   80,
    42,
    5,
    46,
@@ -3868,7 +3852,7 @@
    "INT"
   ],
   [
-   82,
+   81,
    12,
    0,
    47,
@@ -3876,7 +3860,7 @@
    "MODEL"
   ],
   [
-   83,
+   82,
    47,
    0,
    48,
@@ -3884,7 +3868,7 @@
    "MODEL"
   ],
   [
-   84,
+   83,
    48,
    0,
    49,
@@ -3892,7 +3876,7 @@
    "MODEL"
   ],
   [
-   85,
+   84,
    46,
    0,
    49,
@@ -3900,7 +3884,7 @@
    "CONDITIONING"
   ],
   [
-   86,
+   85,
    42,
    2,
    52,
@@ -3908,7 +3892,7 @@
    "H3_FACE_ATLAS"
   ],
   [
-   87,
+   86,
    50,
    0,
    53,
@@ -3916,7 +3900,7 @@
    "NOISE"
   ],
   [
-   88,
+   87,
    49,
    0,
    53,
@@ -3924,7 +3908,7 @@
    "GUIDER"
   ],
   [
-   89,
+   88,
    51,
    0,
    53,
@@ -3932,7 +3916,7 @@
    "SAMPLER"
   ],
   [
-   90,
+   89,
    52,
    0,
    53,
@@ -3940,7 +3924,7 @@
    "SIGMAS"
   ],
   [
-   91,
+   90,
    45,
    0,
    53,
@@ -3948,7 +3932,7 @@
    "LATENT"
   ],
   [
-   92,
+   91,
    53,
    0,
    54,
@@ -3956,7 +3940,7 @@
    "LATENT"
   ],
   [
-   93,
+   92,
    9,
    0,
    54,
@@ -3964,7 +3948,7 @@
    "VAE"
   ],
   [
-   94,
+   93,
    39,
    0,
    55,
@@ -3972,7 +3956,7 @@
    "IMAGE"
   ],
   [
-   95,
+   94,
    54,
    0,
    55,
@@ -3980,7 +3964,7 @@
    "IMAGE"
   ],
   [
-   96,
+   95,
    42,
    2,
    55,
@@ -3988,7 +3972,7 @@
    "H3_FACE_ATLAS"
   ],
   [
-   97,
+   96,
    5,
    0,
    56,
@@ -3996,7 +3980,7 @@
    "STRING"
   ],
   [
-   98,
+   97,
    40,
    1,
    56,
@@ -4004,7 +3988,7 @@
    "STRING"
   ],
   [
-   99,
+   98,
    37,
    3,
    56,
@@ -4012,7 +3996,7 @@
    "INT"
   ],
   [
-   100,
+   99,
    34,
    0,
    57,
@@ -4020,7 +4004,7 @@
    "AUDIO"
   ],
   [
-   101,
+   100,
    40,
    4,
    57,
@@ -4028,7 +4012,7 @@
    "STRING"
   ],
   [
-   102,
+   101,
    57,
    0,
    58,
@@ -4036,7 +4020,7 @@
    "AUDIO"
   ],
   [
-   103,
+   102,
    10,
    0,
    58,
@@ -4044,7 +4028,7 @@
    "VAE"
   ],
   [
-   104,
+   103,
    12,
    0,
    59,
@@ -4052,7 +4036,7 @@
    "MODEL"
   ],
   [
-   105,
+   104,
    59,
    0,
    60,
@@ -4060,7 +4044,7 @@
    "MODEL"
   ],
   [
-   106,
+   105,
    66,
    0,
    61,
@@ -4068,7 +4052,7 @@
    "LATENT"
   ],
   [
-   107,
+   106,
    61,
    0,
    62,
@@ -4076,7 +4060,7 @@
    "LATENT"
   ],
   [
-   108,
+   107,
    9,
    0,
    62,
@@ -4084,7 +4068,7 @@
    "VAE"
   ],
   [
-   109,
+   108,
    42,
    2,
    63,
@@ -4092,7 +4076,7 @@
    "H3_FACE_ATLAS"
   ],
   [
-   110,
+   109,
    3,
    0,
    63,
@@ -4100,7 +4084,7 @@
    "INT"
   ],
   [
-   111,
+   110,
    4,
    0,
    63,
@@ -4108,7 +4092,7 @@
    "INT"
   ],
   [
-   112,
+   111,
    62,
    0,
    64,
@@ -4116,7 +4100,7 @@
    "IMAGE"
   ],
   [
-   113,
+   112,
    54,
    0,
    64,
@@ -4124,7 +4108,7 @@
    "IMAGE"
   ],
   [
-   114,
+   113,
    63,
    0,
    64,
@@ -4132,7 +4116,7 @@
    "H3_FACE_ATLAS"
   ],
   [
-   115,
+   114,
    64,
    0,
    65,
@@ -4140,7 +4124,7 @@
    "IMAGE"
   ],
   [
-   116,
+   115,
    34,
    0,
    65,
@@ -4148,7 +4132,7 @@
    "AUDIO"
   ],
   [
-   117,
+   116,
    60,
    0,
    66,
@@ -4156,7 +4140,7 @@
    "MODEL"
   ],
   [
-   118,
+   117,
    14,
    0,
    66,
@@ -4164,7 +4148,7 @@
    "CONDITIONING"
   ],
   [
-   119,
+   118,
    19,
    0,
    66,
@@ -4172,7 +4156,7 @@
    "LATENT"
   ],
   [
-   120,
+   119,
    55,
    0,
    66,
@@ -4180,7 +4164,7 @@
    "IMAGE"
   ],
   [
-   121,
+   120,
    11,
    0,
    66,
@@ -4188,7 +4172,7 @@
    "VAE"
   ],
   [
-   122,
+   121,
    3,
    0,
    66,
@@ -4196,7 +4180,7 @@
    "INT"
   ],
   [
-   123,
+   122,
    4,
    0,
    66,

@@ -21,6 +21,8 @@ pose; the two relays share one. Click for the full clip (with sound, then half s
 | Re:Zero-style mecha, close-ups | 503 s | 241 s | **119 s** | **108 s** |
 | Re:Zero-style wide shot, small faces | 500 s | 239 s | **117 s** | **106 s** |
 
+Measured with dense attention on the 1920 step; the 4-frame window the example workflows use since 0.2.1 takes another
+~7 s off these 5 s clips and about half the 1920 step on 10-15 s clips ([bench](#bench-pika-vs-dmad-window-attention-de-rope-schedule)).
 *+ Fast Tail*: the same Relay Hires with the H3 Fast Tail Sampler in pass 1 ([below](#faster-pass-1-h3-fast-tail-sampler)),
 same take. The two relay columns were measured in one session (Relay Hires renders bit-identical to its first test,
 which also saved an AnimeSR-only comparison video and took 122-126 s); native and 1 MP are from the original tests.
@@ -46,8 +48,11 @@ which also saved an AnimeSR-only comparison video and took 122-126 s); native an
 Why these settings (measured, see the development notes):
 - **sigma 0.60**: 0.45 stays soft from a 0.5 MP take; 0.75 starts redrawing fast frames (new faces, re-smeared limbs).
 - **1 step**: looks the same as 2, slightly steadier, 21 s less.
-- **dense attention**: temporal window attention is ~9 s faster but makes still lines shimmer unless every chunk also
-  sees shared anchor frames, and even then it's a little less steady.
+- **window attention 4, anchors every 8th latent frame** (the example workflows since 0.2.1): each frame attends to
+  its neighbours plus shared anchor frames. On 10-15 s clips the 1920 step takes about half the time of dense attention
+  (11.5 s clip 115 -> 64 s, 10 s fight 92 -> 53 s) with the same sharpness and the same still-line flicker
+  (`tools/static_flicker.py` 1.451 vs 1.439 dense, 1.608 vs 1.595). Without anchors still lines shimmer. `window` 0
+  is dense, the node's own default.
 
 ## Faster pass 1: H3 Fast Tail Sampler
 
@@ -89,7 +94,7 @@ should carry over to other samplers but was only measured with euler.
 of 20. In front of Relay Hires it's the fastest route we've tested, but it **renders its own take**: same prompt and
 seed, different framing, character designs, acting and soundtrack. Not worse, different. Use it when you want max
 speed; keep the 20-step pass 1 (examples 1-8) when you want the base model's take. Example workflows `1_B` and `4_B`
-are 1 and 4 with it (118 -> 82 s and 228 -> 202 s; pass 1 60 -> 22 s).
+are 1 and 4 with it (111 -> 69 s and 216 -> 174 s; pass 1 60 -> 22 s).
 
 [![cyberpunk alley: 20-step pass 1, Pika pass 1 + Relay Hires, 20-step pass 1 + Relay Hires](assets/cyber_pika_3way.webp)](assets/cyber_pika_3way_audio_tour.mp4)
 
@@ -103,8 +108,9 @@ the same Relay Hires (182 s). Click for the clip with sound: each version's soun
   audible from the first second") and it comes back.
 - **Settings**: LoRA 1.0 (the fl2va file for t2v, the ref2va file for Ref2VA) *before* MiniMaxH3SigmaShift (keep 12/3
   in the model path), ManualSigmas `1.0, 0.972973, 0.923077, 0.8, 0.571429, 0.333333, 0`, sampler `lcm`, cfg 1
-  (BasicGuider). The relay's 1920 step stays DMAD 0.8. The Fast Tail Sampler doesn't apply (it shortens the 20-step
-  schedule), so there's no Pika version of 5-8.
+  (BasicGuider). The relay's 1920 step stays DMAD 0.8: Pika there is softer at 1 step, and 2 Pika steps from 0.57
+  look the same as DMAD for ~100 s more ([bench](#bench-pika-vs-dmad-window-attention-de-rope-schedule)). The Fast
+  Tail Sampler doesn't apply (it shortens the 20-step schedule), so there's no Pika version of 5-8.
 
 ## AnimeSR
 
@@ -122,6 +128,34 @@ small arbitrary-scale upscaler (1.3 M params, 5 MB) trained from scratch to undo
 
 AnimeSR alone (no H3 step) is the cheapest 1920 path (~80 s), but it keeps the take's smears and mushy small faces.
 
+## Bench: Pika vs DMAD, window attention, De-rope schedule
+
+2026-11-03, on three Ref2VA anime clips (11.5 s dialogue, 15 s wide shots with small faces, 10 s fist fight), each
+variant on the same take (soundtrack correlation 1.000), so only the stage under test changes. Prompted by a
+community workflow that swaps DMAD for the Pika H3 Flex ref2va LoRA in every pass after pass 1, upscales with lanczos,
+runs the 1920 step 2 steps from 0.57 with a 4-frame window and encodes with the full VAE.
+
+| change | result | verdict |
+|---|---|---|
+| that workflow as a whole | clearly softer at 1920 (Laplacian sharpness 25 vs 78): lanczos + a lower start hand the detail step a blurrier image than AnimeSR at 0.60 | not adopted |
+| full int8 VAE for the 1920 encode instead of taeh3 | softer (54 vs 78) and ~60 s slower | not adopted |
+| Pika in the 1920 step, 1 step at 0.60 | softer than DMAD (169 vs 187) | not adopted |
+| Pika in the 1920 step, 2 steps from 0.57 | +8% sharpness on paper, no visible difference, +100 s | not adopted |
+| Pika in FaceDetail | same faces as DMAD (mean difference ~1/255); on Pika's own sigma knots one step fewer on mid-size faces (133 -> 99 s) | optional |
+| Pika in Fast De-rope (3 lcm steps from 0.8) | keeps pass 1's framing, but drops eye highlights, smudges cheeks, thins sleeve folds | not adopted |
+| **Fast De-rope pass 2: 4 DMAD steps from 0.8** instead of the 8-step inject-0.5 schedule | keeps pass 1's framing and character positions (the old schedule moved the camera and re-staged the fight) with DMAD's line detail, same time (37 vs 38 s); on the examples' market clip the redrawn span stays closer to pass 1 too (mean difference 7.6 vs 10.1) | **examples 2-4, 6-8, 4_B** |
+| **window 4 + anchors every 8 on the 1920 step** | about half the time of dense (115 -> 64 s, 92 -> 53 s), same sharpness and still-line flicker | **all examples** |
+| Pika vs the 20-step pass 1, audio | same take and loudness; the 20-step take had a fuller music bed, Pika's took 3x less time | Pika stays the max-speed option |
+
+![the fist fight at 3.6 s and 8.6 s: pass 1, the old De-rope schedule, the new one](assets/derope_schedule_fight.jpg)
+
+*Pass 1 (left) | old De-rope schedule (middle) | new (right). The old 8-step inject-0.5 pass re-stages the take: the
+camera moves in and the punch becomes a new pose. From 0.8 the redraw keeps pass 1's framing and positions and
+still cleans the smeared arm. Hands can still change (Diana's pointing finger becomes a flat hand in both).*
+
+Still open: the motion gate splices one continuous span, so a calm close-up between fast shots gets redrawn too and
+loses pass-1 detail such as eye highlights. Limiting the redraw to the fast shots is planned in Fast De-rope.
+
 ## Nodes
 
 | node | what it does |
@@ -132,8 +166,9 @@ AnimeSR alone (no H3 step) is the cheapest 1920 path (~80 s), but it keeps the t
 | H3 Relay Window Attention | temporal window attention, with anchor frames (research / speed option) |
 | H3 Relay Anchor, H3 Relay Line Thin | research tools from development, not part of the recipe |
 
-Settings on H3 Relay Hires: `sigma_start` 0.60, `steps` 1, `window` 0. `window` 4 (with `anchor_stride` 8) is ~9 s faster
-with slightly more shimmer on still lines. The `upscaler` list shows AnimeSR models in `models/` plus `lanczos`.
+Settings on H3 Relay Hires: `sigma_start` 0.60, `steps` 1, `window` 4 with `anchor_stride` 8 (the example workflows;
+`window` 0 = dense, the node default, about twice as slow on long clips for the same result). The `upscaler` list
+shows AnimeSR models in `models/` plus `lanczos`.
 
 ## Example workflows
 
@@ -149,22 +184,24 @@ megapixels, 0.5 MP), the hires scale (2.0) and one prompt box; each saves the 0.
 
 | workflow | what it adds | end to end* | packs it needs besides this one |
 |---|---|---|---|
-| [`1_relay_hires.json`](example_workflows/1_relay_hires.json) | relay only | 118 s | FastDerope (its taeh3 loader) |
-| [`2_relay_hires_derope.json`](example_workflows/2_relay_hires_derope.json) | Fast De-rope: smeared fast motion comes back as clean drawings on 2s before the relay | 144 s | FastDerope, MAINodes |
-| [`3_relay_hires_derope_facedetail.json`](example_workflows/3_relay_hires_derope_facedetail.json) | + FaceDetail: small faces redrawn at 0.5 MP; its face tiles are stitched again onto the 1920 frames, so the final keeps the preview's faces | 224 s | + FaceDetail, ResCascade |
-| [`4_relay_hires_derope_facedetail_cadence.json`](example_workflows/4_relay_hires_derope_facedetail_cadence.json) | + Anime Cadence: 2s/3s holds, carried to 1920 by Hold Transfer | 228 s | + AnimeCadence |
-| [`5_relay_hires_fast_tail.json`](example_workflows/5_relay_hires_fast_tail.json) | 1 with the H3 Fast Tail Sampler in pass 1 | 110 s\*\* | as 1 |
-| [`6_relay_hires_derope_fast_tail.json`](example_workflows/6_relay_hires_derope_fast_tail.json) | 2 with the H3 Fast Tail Sampler in pass 1 | 134 s\*\* | as 2 |
-| [`7_relay_hires_derope_facedetail_fast_tail.json`](example_workflows/7_relay_hires_derope_facedetail_fast_tail.json) | 3 with the H3 Fast Tail Sampler in pass 1 | 209 s\*\* | as 3 |
-| [`8_relay_hires_derope_facedetail_cadence_fast_tail.json`](example_workflows/8_relay_hires_derope_facedetail_cadence_fast_tail.json) | 4 with the H3 Fast Tail Sampler in pass 1 | 213 s\*\* | as 4 |
-| [`1_B_relay_hires_PIKA6STEP.json`](example_workflows/1_B_relay_hires_PIKA6STEP.json) | 1 with Pika H3 Flex in pass 1 (6 steps, its own take) | 82 s | as 1, + the Pika H3 Flex fl2va LoRA |
-| [`4_B_relay_hires_derope_facedetail_cadence_PIKA6STEP.json`](example_workflows/4_B_relay_hires_derope_facedetail_cadence_PIKA6STEP.json) | 4 with Pika H3 Flex in pass 1 (6 steps, its own take) | 202 s | as 4, + the Pika H3 Flex fl2va LoRA |
+| [`1_relay_hires.json`](example_workflows/1_relay_hires.json) | relay only | 111 s | FastDerope (its taeh3 loader) |
+| [`2_relay_hires_derope.json`](example_workflows/2_relay_hires_derope.json) | Fast De-rope: smeared fast motion comes back as clean drawings on 2s before the relay | 136 s | FastDerope, MAINodes |
+| [`3_relay_hires_derope_facedetail.json`](example_workflows/3_relay_hires_derope_facedetail.json) | + FaceDetail: small faces redrawn at 0.5 MP; its face tiles are stitched again onto the 1920 frames, so the final keeps the preview's faces | 212 s | + FaceDetail, ResCascade |
+| [`4_relay_hires_derope_facedetail_cadence.json`](example_workflows/4_relay_hires_derope_facedetail_cadence.json) | + Anime Cadence: 2s/3s holds, carried to 1920 by Hold Transfer | 216 s | + AnimeCadence |
+| [`5_relay_hires_fast_tail.json`](example_workflows/5_relay_hires_fast_tail.json) | 1 with the H3 Fast Tail Sampler in pass 1 | 97 s\*\* | as 1 |
+| [`6_relay_hires_derope_fast_tail.json`](example_workflows/6_relay_hires_derope_fast_tail.json) | 2 with the H3 Fast Tail Sampler in pass 1 | 122 s\*\* | as 2 |
+| [`7_relay_hires_derope_facedetail_fast_tail.json`](example_workflows/7_relay_hires_derope_facedetail_fast_tail.json) | 3 with the H3 Fast Tail Sampler in pass 1 | 198 s\*\* | as 3 |
+| [`8_relay_hires_derope_facedetail_cadence_fast_tail.json`](example_workflows/8_relay_hires_derope_facedetail_cadence_fast_tail.json) | 4 with the H3 Fast Tail Sampler in pass 1 | 201 s\*\* | as 4 |
+| [`1_B_relay_hires_PIKA6STEP.json`](example_workflows/1_B_relay_hires_PIKA6STEP.json) | 1 with Pika H3 Flex in pass 1 (6 steps, its own take) | 69 s\*\* | as 1, + the Pika H3 Flex fl2va LoRA |
+| [`4_B_relay_hires_derope_facedetail_cadence_PIKA6STEP.json`](example_workflows/4_B_relay_hires_derope_facedetail_cadence_PIKA6STEP.json) | 4 with Pika H3 Flex in pass 1 (6 steps, its own take) | 174 s\*\* | as 4, + the Pika H3 Flex fl2va LoRA |
 
 *1920x1088, 124 frames (5 s), RTX 5090. FaceDetail's cost depends on the clip: here it redrew four face tracks of
 ~30 px and took ~80 s, re-stitch included.
 
-\*\*Timed in one session together with a re-run of 1-4 (122 / 146 / 218 / 222 s there): the whole difference is pass 1,
-58 -> 47 s; FaceDetail's CPU steps vary by a few seconds between runs.
+\*\*Timed in the session right after 1-4 (0.2.1 settings: window 4 on the 1920 step, De-rope from 0.8); the stages
+already cached from that run (text encode, model loads, ~4 s) are counted with their times from it. Pass 1 61 -> 47 s
+with the Fast Tail, 19 s with Pika. Against 0.2.0 the window saves 8 s on the 1920 step (32 -> 24 s) and De-rope's
+pass 2 takes the same time (15 -> 14 s); the rest is FaceDetail's CPU steps, which vary by several seconds between runs.
 
 - In workflow 4 the relay renders the frames *before* Anime Cadence (so FaceDetail's tiles stay on their frames).
   Hold Transfer then copies the 0.5 MP holds onto the 1920 frames; with its `source` input each hold shows the drawing

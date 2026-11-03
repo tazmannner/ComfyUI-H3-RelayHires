@@ -1259,12 +1259,12 @@
     "animesr_v1.safetensors",
     0.6,
     1,
-    0,
+    4,
     108,
     "fixed",
     8
    ],
-   "title": "H3 RELAY HIRES: AnimeSR -> 1 DMAD step at sigma 0.60 at 1920, audio pinned"
+   "title": "H3 RELAY HIRES: AnimeSR -> 1 DMAD step at sigma 0.60 at 1920, audio pinned; window 4 + anchors every 8 (about half the time of dense; 0 = dense)"
   },
   {
    "id": 30,
@@ -1284,7 +1284,7 @@
    "outputs": [],
    "properties": {},
    "widgets_values": [
-    "RELAY HIRES, example 1_B: example 1 with Pika H3 Flex (6 steps) for pass 1.\n\nPass 1 runs Pika H3 Flex (a distilled turbo LoRA, github.com/Pika-Labs/Pika-H3-Flex): its LoRA before the sigma shift, ManualSigmas 1.0, 0.972973, 0.923077, 0.8, 0.571429, 0.333333, 0 and the lcm sampler, cfg 1. That's 6 steps instead of 20, the fastest pass 1, but NOT the base model's take: same prompt and seed give different acting, framing and audio (not worse, different; quiet background music may drop out, so describe music loudly). Use it when you want max speed; examples 1-8 keep the base model's take. Fast De-rope, FaceDetail and the relay keep their own samplers and the DMAD LoRA.\n\nPass 1 at 0.5 MP (960x544) decides layout, motion, acting and audio, and is where most of the time goes: preview it. H3 Relay Hires hands it to 1920x1088: AnimeSR (an anime upscaler that brings H3's thick low-res ink lines back to thin, clean lines) + one dense DMAD step from sigma 0.60 with the pass-1 audio pinned. Same take as the preview, crisp at 1:1.\nVery fast action that melts in the 0.5 MP take comes out as motion blur: example 2 fixes those frames first. Examples 3 and 4 add FaceDetail and Anime Cadence.\n\nSet the pass-1 size, hires scale and prompt in the blue SETTINGS group. Needs: ComfyUI-H3-FastDerope, ComfyUI-H3-RelayHires, ComfyUI-VideoHelperSuite, comfyui_essentials. Models: MiniMax H3 (int8 DiT, text encoder, fp16 + int8 video VAEs, audio VAE), taeh3, the DMAD 4-step turbo LoRA, the Pika H3 Flex fl2va LoRA.\n\nTested: 82 s end to end on an RTX 5090 (5 s clip, 124 frames)."
+    "RELAY HIRES, example 1_B: example 1 with Pika H3 Flex (6 steps) for pass 1.\n\nPass 1 runs Pika H3 Flex (a distilled turbo LoRA, github.com/Pika-Labs/Pika-H3-Flex): its LoRA before the sigma shift, ManualSigmas 1.0, 0.972973, 0.923077, 0.8, 0.571429, 0.333333, 0 and the lcm sampler, cfg 1. That's 6 steps instead of 20, the fastest pass 1, but NOT the base model's take: same prompt and seed give different acting, framing and audio (not worse, different; quiet background music may drop out, so describe music loudly). Use it when you want max speed; examples 1-8 keep the base model's take. Fast De-rope, FaceDetail and the relay keep their own samplers and the DMAD LoRA.\n\nPass 1 at 0.5 MP (960x544) decides layout, motion, acting and audio, and is where most of the time goes: preview it. H3 Relay Hires hands it to 1920x1088: AnimeSR (an anime upscaler that brings H3's thick low-res ink lines back to thin, clean lines) + one DMAD step from sigma 0.60 with the pass-1 audio pinned (4-frame window attention with anchors: about half the time of dense, set window 0 for dense). Same take as the preview, crisp at 1:1.\nVery fast action that melts in the 0.5 MP take comes out as motion blur: example 2 fixes those frames first. Examples 3 and 4 add FaceDetail and Anime Cadence.\n\nSet the pass-1 size, hires scale and prompt in the blue SETTINGS group. Needs: ComfyUI-H3-FastDerope, ComfyUI-H3-RelayHires, ComfyUI-VideoHelperSuite, comfyui_essentials. Models: MiniMax H3 (int8 DiT, text encoder, fp16 + int8 video VAEs, audio VAE), taeh3, the DMAD 4-step turbo LoRA, the Pika H3 Flex fl2va LoRA.\n\nTested: 69 s end to end on an RTX 5090 (5 s clip, 124 frames)."
    ]
   }
  ],

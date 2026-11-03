@@ -711,7 +711,8 @@
     "beta57",
     20,
     1.0
-   ]
+   ],
+   "title": "PASS 1: Pika's 6 sigmas (keep the 12/3 sigma shift in the model path)"
   },
   {
    "id": 19,
@@ -1230,12 +1231,12 @@
     "animesr_v1.safetensors",
     0.6,
     1,
-    0,
+    4,
     108,
     "fixed",
     8
    ],
-   "title": "H3 RELAY HIRES: AnimeSR -> 1 DMAD step at sigma 0.60 at 1920, audio pinned"
+   "title": "H3 RELAY HIRES: AnimeSR -> 1 DMAD step at sigma 0.60 at 1920, audio pinned; window 4 + anchors every 8 (about half the time of dense; 0 = dense)"
   },
   {
    "id": 29,
@@ -1255,7 +1256,7 @@
    "outputs": [],
    "properties": {},
    "widgets_values": [
-    "RELAY HIRES, example 5 of 8: example 1 with the H3 Fast Tail Sampler for pass 1.\n\nPass 1 runs the H3 Fast Tail Sampler instead of KSamplerSelect euler: the 12 euler steps where H3 decides the take (sigma >= 0.79) exactly as before, then 4 2nd-order steps for the smooth tail instead of 8. Pass 1 is ~20% faster with the same take, detail and soundtrack (the audio comes out ~0.5 dB louder, closer to a fully converged finish). De-rope, FaceDetail and the relay keep their own samplers. Keep BasicScheduler beta57 20.\n\nPass 1 at 0.5 MP (960x544) decides layout, motion, acting and audio, and is where most of the time goes: preview it. H3 Relay Hires hands it to 1920x1088: AnimeSR (an anime upscaler that brings H3's thick low-res ink lines back to thin, clean lines) + one dense DMAD step from sigma 0.60 with the pass-1 audio pinned. Same take as the preview, crisp at 1:1.\nVery fast action that melts in the 0.5 MP take comes out as motion blur: example 6 fixes those frames first. Examples 7 and 8 add FaceDetail and Anime Cadence.\n\nSet the pass-1 size, hires scale and prompt in the blue SETTINGS group. Needs: ComfyUI-H3-FastDerope, ComfyUI-H3-RelayHires, ComfyUI-VideoHelperSuite, comfyui_essentials. Models: MiniMax H3 (int8 DiT, text encoder, fp16 + int8 video VAEs, audio VAE), taeh3, the DMAD 4-step turbo LoRA.\n\nTested: 110 s end to end on an RTX 5090 (5 s clip, 124 frames)."
+    "RELAY HIRES, example 5 of 8: example 1 with the H3 Fast Tail Sampler for pass 1.\n\nPass 1 runs the H3 Fast Tail Sampler instead of KSamplerSelect euler: the 12 euler steps where H3 decides the take (sigma >= 0.79) exactly as before, then 4 2nd-order steps for the smooth tail instead of 8. Pass 1 is ~20% faster with the same take, detail and soundtrack (the audio comes out ~0.5 dB louder, closer to a fully converged finish). De-rope, FaceDetail and the relay keep their own samplers. Keep BasicScheduler beta57 20.\n\nPass 1 at 0.5 MP (960x544) decides layout, motion, acting and audio, and is where most of the time goes: preview it. H3 Relay Hires hands it to 1920x1088: AnimeSR (an anime upscaler that brings H3's thick low-res ink lines back to thin, clean lines) + one DMAD step from sigma 0.60 with the pass-1 audio pinned (4-frame window attention with anchors: about half the time of dense, set window 0 for dense). Same take as the preview, crisp at 1:1.\nVery fast action that melts in the 0.5 MP take comes out as motion blur: example 6 fixes those frames first. Examples 7 and 8 add FaceDetail and Anime Cadence.\n\nSet the pass-1 size, hires scale and prompt in the blue SETTINGS group. Needs: ComfyUI-H3-FastDerope, ComfyUI-H3-RelayHires, ComfyUI-VideoHelperSuite, comfyui_essentials. Models: MiniMax H3 (int8 DiT, text encoder, fp16 + int8 video VAEs, audio VAE), taeh3, the DMAD 4-step turbo LoRA.\n\nTested: 97 s end to end on an RTX 5090 (5 s clip, 124 frames)."
    ]
   }
  ],
